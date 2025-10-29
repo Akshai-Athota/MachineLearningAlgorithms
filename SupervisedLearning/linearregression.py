@@ -1,4 +1,4 @@
-#%%
+# %%
 
 import numpy as np
 import pandas as pd
@@ -6,48 +6,52 @@ import matplotlib.pyplot as plt
 
 np.random.seed(42)
 
-#%% Load Dataset
+# %% Load Dataset
 
 dataset = pd.read_csv("./../Datasets/housing_linear_regression.csv")
 dataset.head(5)
 
-#%% Dataset Info
+# %% Dataset Info
 
 dataset.describe()
 dataset.info()
 
-#%% Check ocean_proximity
+# %% Check ocean_proximity
 
 dataset["ocean_proximity"].describe()
 dataset["ocean_proximity"].unique()
 
-#%% One Hot Encode ocean_proximity
+# %% One Hot Encode ocean_proximity
 
 from sklearn.preprocessing import OneHotEncoder
 
-oe = OneHotEncoder(drop='first', sparse_output=False)
+oe = OneHotEncoder(drop="first", sparse_output=False)
 encoded_array = oe.fit_transform(dataset[["ocean_proximity"]])
 
 dataset.drop(columns=["ocean_proximity"], inplace=True)
-encoded_dataframe = pd.DataFrame(encoded_array, columns=oe.get_feature_names_out(['ocean_proximity']))
+encoded_dataframe = pd.DataFrame(
+    encoded_array, columns=oe.get_feature_names_out(["ocean_proximity"])
+)
 
-dataset = pd.concat([dataset.reset_index(drop=True), encoded_dataframe.reset_index(drop=True)], axis=1)
+dataset = pd.concat(
+    [dataset.reset_index(drop=True), encoded_dataframe.reset_index(drop=True)], axis=1
+)
 dataset.head()
 
-#%% Features and Target
+# %% Features and Target
 
 X = dataset.drop("median_house_value", axis=1)
 y = dataset["median_house_value"]
 columns = X.columns
 
-#%% Train-Test Split
+# %% Train-Test Split
 
 from sklearn.model_selection import train_test_split
 
 x_train, x_test, y_train, y_test = train_test_split(X, y, shuffle=True, random_state=42)
 print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 
-#%% Impute Missing Values
+# %% Impute Missing Values
 
 from sklearn.impute import SimpleImputer
 
@@ -55,7 +59,8 @@ imputer = SimpleImputer(strategy="median")
 x_train = pd.DataFrame(imputer.fit_transform(x_train), columns=columns)
 x_test = pd.DataFrame(imputer.transform(x_test), columns=columns)
 
-#%% Add Feature Engineering Columns
+# %% Add Feature Engineering Columns
+
 
 def add_columns(df):
     df = df.copy()
@@ -64,30 +69,42 @@ def add_columns(df):
     df["population_per_household"] = df["population"] / df["households"]
     return df
 
+
 x_train = add_columns(x_train)
 x_test = add_columns(x_test)
 
-#%% Drop Multicollinear Features based on VIF
+# %% Drop Multicollinear Features based on VIF
 
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-features = x_train[["total_rooms", "rooms_per_household", "households", "population",
-                    "bedrooms_per_room", "population_per_household", "total_bedrooms"]]
+features = x_train[
+    [
+        "total_rooms",
+        "rooms_per_household",
+        "households",
+        "population",
+        "bedrooms_per_room",
+        "population_per_household",
+        "total_bedrooms",
+    ]
+]
 
 vif = pd.DataFrame()
-vif['feature'] = features.columns
-vif["VIF"] = [variance_inflation_factor(features.values, i) for i in range(features.shape[1])]
+vif["feature"] = features.columns
+vif["VIF"] = [
+    variance_inflation_factor(features.values, i) for i in range(features.shape[1])
+]
 print(vif)
 
 x_train.drop(columns=["total_rooms", "households", "total_bedrooms"], inplace=True)
 x_test.drop(columns=["total_rooms", "households", "total_bedrooms"], inplace=True)
 
-#%% Correlation Check
+# %% Correlation Check
 
 corr = x_train.join(y_train).corr()["median_house_value"]
 print(corr)
 
-#%% Standardize Features and Target
+# %% Standardize Features and Target
 
 from sklearn.preprocessing import StandardScaler
 
@@ -100,7 +117,8 @@ y_transform = StandardScaler()
 y_train_scaled = y_transform.fit_transform(y_train.values.reshape(-1, 1)).ravel()
 y_test_scaled = y_transform.transform(y_test.values.reshape(-1, 1)).ravel()
 
-#%% Custom Linear Regression Class
+# %% Custom Linear Regression Class
+
 
 class LinearRegressionCustom:
     def __init__(self, features: int, lr: float, epochs: int):
@@ -119,8 +137,8 @@ class LinearRegressionCustom:
     def update_weights(self, X: np.array, y: np.array, y_pred: np.array):
         m = X.shape[0]
         error = y_pred - y  # shape: (m,)
-        dw = (1/m) * X.T.dot(error)  # shape: (n_features,)
-        db = (1/m) * np.sum(error)
+        dw = (1 / m) * X.T.dot(error)  # shape: (n_features,)
+        db = (1 / m) * np.sum(error)
         self.w -= self.lr * dw
         self.b -= self.lr * db
 
@@ -135,7 +153,7 @@ class LinearRegressionCustom:
         return self.w, self.b, loss
 
 
-#%% Train Custom Linear Regression
+# %% Train Custom Linear Regression
 
 features = x_train_scaled.shape[1]
 epochs = 10000
@@ -147,14 +165,16 @@ print(f"Final weights: {w}")
 print(f"Final bias: {b}")
 print(f"Final loss after {epochs} epochs: {loss[-1]}")
 
-#%% Test Custom Linear Regression
+# %% Test Custom Linear Regression
 
 y_pred_scaled = custom_lr.predict(x_test_scaled)
 y_pred = y_transform.inverse_transform(y_pred_scaled.reshape(-1, 1))
-print(f"Test loss (custom LR): {custom_lr.calculate_loss(y_pred_scaled, y_test_scaled)}")
+print(
+    f"Test loss (custom LR): {custom_lr.calculate_loss(y_pred_scaled, y_test_scaled)}"
+)
 print(f"Sample predictions (custom LR): {y_pred[:10]}")
 
-#%% Sklearn Linear Regression
+# %% Sklearn Linear Regression
 
 from sklearn.linear_model import LinearRegression
 
@@ -165,10 +185,11 @@ sklearn_pred_scaled = sklearn_lr.predict(x_test_scaled)
 sklearn_pred = y_transform.inverse_transform(sklearn_pred_scaled.reshape(-1, 1))
 
 from sklearn.metrics import mean_squared_error
+
 print(f"Test MSE (Sklearn LR): {mean_squared_error(y_test, sklearn_pred)}")
 print(f"Sample predictions (Sklearn LR): {sklearn_pred[:10]}")
 
-#%% SGD Regressor
+# %% SGD Regressor
 
 from sklearn.linear_model import SGDRegressor
 
@@ -180,6 +201,3 @@ sgd_pred = y_transform.inverse_transform(sgd_pred_scaled.reshape(-1, 1))
 
 print(f"Test MSE (SGD Regressor): {mean_squared_error(y_test, sgd_pred)}")
 print(f"Sample predictions (SGD Regressor): {sgd_pred[:10]}")
-
-
-
