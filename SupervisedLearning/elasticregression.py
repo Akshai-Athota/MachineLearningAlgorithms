@@ -75,3 +75,12 @@ print(y_test)
 # %%
 print(y_preds)
 # %%
+from sklearn.linear_model import ElasticNet
+
+ers = ElasticNet()
+ers.fit(x_train, y_train)
+y_preds = ers.predict(x_test).reshape(-1, 1)
+print(f"skelarn model loss : {er.loss(y_test.reshape(-1,1),y_preds)}")
+# %%
+print(y_preds)
+# %%
