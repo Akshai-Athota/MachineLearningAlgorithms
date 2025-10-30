@@ -137,8 +137,8 @@ class LinearRegressionCustom:
     def update_weights(self, X: np.array, y: np.array, y_pred: np.array):
         m = X.shape[0]
         error = y_pred - y  # shape: (m,)
-        dw = (1 / m) * X.T.dot(error)  # shape: (n_features,)
-        db = (1 / m) * np.sum(error)
+        dw = (-2 / m) * X.T.dot(error)  # shape: (n_features,)
+        db = (-2 / m) * np.sum(error)
         self.w -= self.lr * dw
         self.b -= self.lr * db
 
@@ -156,7 +156,7 @@ class LinearRegressionCustom:
 # %% Train Custom Linear Regression
 
 features = x_train_scaled.shape[1]
-epochs = 10000
+epochs = 500
 lr_custom = 0.01
 custom_lr = LinearRegressionCustom(features, lr_custom, epochs)
 w, b, loss = custom_lr.train(x_train_scaled, y_train_scaled)

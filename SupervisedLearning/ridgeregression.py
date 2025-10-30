@@ -14,12 +14,10 @@ class Ridged_Regression:
         return np.dot(x, self.w) + self.b
 
     def update_weights(self, x: np.ndarray, y: np.ndarray, y_preds: np.ndarray):
-        self.w -= (
-            self.lr
-            * (1 / x.shape[0])
-            * ((-1) * np.dot(x.T, (y - y_preds)) + self.cost * (self.w))
+        self.w -= self.lr * (
+            (-2 / x.shape[0]) * np.dot(x.T, (y - y_preds)) + self.cost * (self.w)
         )
-        self.b -= self.lr * ((-1) * np.mean(y - y_preds))
+        self.b -= self.lr * ((-2) * np.mean(y - y_preds))
 
     def loss(self, y: np.ndarray, y_preds: np.ndarray):
         rmse = np.sqrt(np.mean((y - y_preds) ** 2))
@@ -163,7 +161,7 @@ x_train.shape, y_train.shape, x_test.shape, y_test.shape
 
 # %%
 
-rr = Ridged_Regression(epochs=2000, lr=0.0001, cost=0.5)
+rr = Ridged_Regression(epochs=500, lr=0.1, cost=0.5)
 loss = rr.fit(x_train_scaled, y_train_scaled)
 
 print(f"final loss of the model : {loss[-1]}")
