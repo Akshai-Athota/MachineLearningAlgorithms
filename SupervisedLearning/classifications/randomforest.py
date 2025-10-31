@@ -1,6 +1,9 @@
 # %%
 import numpy as np
-from desiciontree import Decision_Tree_Classifier, accuracy
+from SupervisedLearning.classifications.desiciontree import (
+    Decision_Tree_Classifier,
+    accuracy,
+)
 from typing import Optional, Union
 from collections import Counter
 
