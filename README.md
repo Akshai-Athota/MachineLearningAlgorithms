@@ -57,16 +57,6 @@ This repository contains a comprehensive **Machine Learning portfolio**, where m
 - Exponential Smoothing (Holt-Winters)
 - Markov Chains
 - Hidden Markov Models (HMM)
-- Conditional Random Fields (CRF)
-
-### Advanced Boosting
-- Gradient Boosting
-- AdaBoost
-- XGBoost
-
-### Nonlinear Dimensionality Reduction
-- t-SNE
-- UMAP
 
 ---
 
